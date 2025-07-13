@@ -9,7 +9,7 @@ main_key = "AYAxAPI"
 executor = ThreadPoolExecutor(max_workers=10)
 
 def fetch_player_info(uid, region):
-    url = f'https://aditya-info-v12op.onrender.com/player-info?uid={uid}&region={region}'
+    url = f'https://info-outfit-ayacte.vercel.app/player-info?uid={uid}&region={region}'
     response = requests.get(url)
     return response.json() if response.status_code == 200 else None
 
@@ -40,12 +40,13 @@ def outfit_image():
     if not player_data:
         return jsonify({'error': 'Failed to fetch player info'}), 500
 
-    profile = player_data.get("player_info", {}).get("profileInfo", {})
+    profile = player_data.get("profileInfo", {})
     clothes_ids = profile.get("clothes", [])
     equipped_skills = profile.get("equipedSkills", [])
-    pet_info = player_data.get("player_info", {}).get("petInfo", {})
+    pet_info = player_data.get("petInfo", {})
     pet_id = pet_info.get("id")
-    weapon_id = player_data.get("player_info", {}).get("basicInfo", {}).get("gameBagShow")
+    weapon_ids = player_data.get("basicInfo", {}).get("weaponSkinShows", [])
+    weapon_id = weapon_ids[0] if weapon_ids else None
 
     required_starts = ["211", "214", "211", "203", "204", "205", "203"]
     fallback_ids = ["211000000", "214000000", "208000000", "203000000", "204000000", "205000000", "212000000"]
@@ -75,15 +76,15 @@ def outfit_image():
 
     positions = [
         {'x': 728, 'y': 170, 'width': 170, 'height': 170},
-        {'x': 142, 'y': 142, 'width': 170, 'height': 170},
+        {'x': 142, 'y': 142, 'width': 170, 'height': 170},  # هذا سنبدله
         {'x': 839, 'y': 362, 'width': 170, 'height': 170},
         {'x': 710, 'y': 763, 'width': 140, 'height': 140},
         {'x': 38,  'y': 575, 'width': 170, 'height': 170},
         {'x': 164, 'y': 752, 'width': 170, 'height': 170},
-        {'x': 42,  'y': 334, 'width': 170, 'height': 170}
+        {'x': 42,  'y': 334, 'width': 170, 'height': 170}   # وهذا معه
     ]
 
-    # هنا التبديل بين المربع الثاني والمربع الأخير
+    # التبديل بين المربع الثاني (1) والمربع الأخير (6)
     positions[1], positions[6] = positions[6], positions[1]
 
     for idx, future in enumerate(outfit_images):
