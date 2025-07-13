@@ -3,9 +3,14 @@ import requests
 from PIL import Image
 from io import BytesIO
 from concurrent.futures import ThreadPoolExecutor
+from datetime import datetime
 
 app = Flask(__name__)
-main_key = "AYAxAPI"
+
+main_key = "ZRteam"
+temp_key = "RAZOR1MON"
+temp_key_expiration = datetime(2025, 8, 13)  # انتهاء الصلاحية (غير التاريخ إذا أردت)
+
 executor = ThreadPoolExecutor(max_workers=10)
 
 def fetch_player_info(uid, region):
@@ -33,7 +38,14 @@ def outfit_image():
 
     if not uid or not region:
         return jsonify({'error': 'Missing uid or region'}), 400
-    if key != main_key:
+
+    # التحقق من المفتاح
+    if key == main_key:
+        pass  # مفتاح دائم
+    elif key == temp_key:
+        if datetime.utcnow() > temp_key_expiration:
+            return jsonify({'error': 'Temporary key expired'}), 403
+    else:
         return jsonify({'error': 'Invalid or missing API key'}), 403
 
     player_data = fetch_player_info(uid, region)
@@ -87,13 +99,14 @@ def outfit_image():
 
     # ثم: تبادل المربع الثاني (1 بعد التعديل) مع السابع (6)
     positions[1], positions[6] = positions[6], positions[1]
-    #
+
+    # تبادل آخر
     positions[3], positions[1] = positions[1], positions[3]
-    
+
     # رفع وتحريك المربع النهائي
-    positions[6]['x'] += 20  # يمين
-    positions[6]['y'] -= 40  # أعلى
-    
+    positions[6]['x'] += 20
+    positions[6]['y'] -= 40
+
     for idx, future in enumerate(outfit_images):
         outfit_image = future.result()
         if outfit_image:
@@ -101,7 +114,7 @@ def outfit_image():
             resized = outfit_image.resize((pos['width'], pos['height']))
             background_image.paste(resized, (pos['x'], pos['y']), resized)
 
-    # Avatar (الشخصية)
+    # Avatar
     avatar_id = next((skill for skill in equipped_skills if str(skill).endswith("06")), 406)
 
     if avatar_id:
