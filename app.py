@@ -1,0 +1,117 @@
+from flask import Flask, request, jsonify, send_file
+import requests
+from PIL import Image
+from io import BytesIO
+from concurrent.futures import ThreadPoolExecutor
+
+app = Flask(__name__)
+main_key = "AYAxAPI"
+executor = ThreadPoolExecutor(max_workers=10)
+
+def fetch_player_info(uid, region):
+    url = f'https://aditya-info-v12op.onrender.com/player-info?uid={uid}&region={region}'
+    response = requests.get(url)
+    return response.json() if response.status_code == 200 else None
+
+def fetch_and_process_image(image_url, size=None):
+    try:
+        response = requests.get(image_url)
+        if response.status_code == 200:
+            image = Image.open(BytesIO(response.content)).convert("RGBA")
+            if size:
+                image = image.resize(size)
+            return image
+        return None
+    except:
+        return None
+
+@app.route('/outfit-image', methods=['GET'])
+def outfit_image():
+    uid = request.args.get('uid')
+    region = request.args.get('region')
+    key = request.args.get('key')
+
+    if not uid or not region:
+        return jsonify({'error': 'Missing uid or region'}), 400
+    if key != main_key:
+        return jsonify({'error': 'Invalid or missing API key'}), 403
+
+    player_data = fetch_player_info(uid, region)
+    if not player_data:
+        return jsonify({'error': 'Failed to fetch player info'}), 500
+
+    profile = player_data.get("player_info", {}).get("profileInfo", {})
+    clothes_ids = profile.get("clothes", [])
+    equipped_skills = profile.get("equipedSkills", [])
+    pet_info = player_data.get("player_info", {}).get("petInfo", {})
+    pet_id = pet_info.get("id")
+    weapon_id = player_data.get("player_info", {}).get("basicInfo", {}).get("gameBagShow")
+
+    required_starts = ["211", "214", "211", "203", "204", "205", "203"]
+    fallback_ids = ["211000000", "214000000", "208000000", "203000000", "204000000", "205000000", "212000000"]
+    used_ids = set()
+    outfit_images = []
+
+    def fetch_outfit_image(idx, code):
+        matched = None
+        for oid in clothes_ids:
+            str_oid = str(oid)
+            if str_oid.startswith(code) and oid not in used_ids:
+                matched = oid
+                used_ids.add(oid)
+                break
+        if matched is None:
+            matched = fallback_ids[idx]
+        url = f'https://freefireinfo.vercel.app/icon?id={matched}'
+        return fetch_and_process_image(url, size=(170, 170))
+
+    for idx, code in enumerate(required_starts):
+        outfit_images.append(executor.submit(fetch_outfit_image, idx, code))
+
+    bg_url = 'https://iili.io/F3cIKpp.jpg'
+    background_image = fetch_and_process_image(bg_url, size=(1024, 1024))
+    if not background_image:
+        return jsonify({'error': 'Failed to fetch background image'}), 500
+
+    positions = [
+        {'x': 728, 'y': 170, 'width': 170, 'height': 170},
+        {'x': 142, 'y': 142, 'width': 170, 'height': 170},
+        {'x': 839, 'y': 362, 'width': 170, 'height': 170},
+        {'x': 710, 'y': 763, 'width': 140, 'height': 140},
+        {'x': 38,  'y': 575, 'width': 170, 'height': 170},
+        {'x': 164, 'y': 752, 'width': 170, 'height': 170},
+        {'x': 42,  'y': 334, 'width': 170, 'height': 170}
+    ]
+
+
+    for idx, future in enumerate(outfit_images):
+        outfit_image = future.result()
+        if outfit_image:
+            pos = positions[idx]
+            resized = outfit_image.resize((pos['width'], pos['height']))
+            background_image.paste(resized, (pos['x'], pos['y']), resized)
+
+    # Avatar từ skill ID kết thúc bằng 06
+    avatar_id = next((skill for skill in equipped_skills if str(skill).endswith("06")), 406)
+
+    if avatar_id:
+        avatar_url = f'https://characteriroxmar.vercel.app/chars?id={avatar_id}'
+        avatar_image = fetch_and_process_image(avatar_url, size=(650, 780))
+        if avatar_image:
+            center_x = (1024 - avatar_image.width) // 2
+            center_y = 145
+            background_image.paste(avatar_image, (center_x, center_y), avatar_image)
+
+    if weapon_id:
+        weapon_url = f'https://freefireinfo.vercel.app/icon?id={weapon_id}'
+        weapon_image = fetch_and_process_image(weapon_url, size=(360, 180))
+        if weapon_image:
+            background_image.paste(weapon_image, (670, 564), weapon_image)
+
+    img_io = BytesIO()
+    background_image.save(img_io, 'PNG')
+    img_io.seek(0)
+    return send_file(img_io, mimetype='image/png')
+
+if __name__ == "__main__":
+    app.run(debug=True, host='0.0.0.0', port=5000)
