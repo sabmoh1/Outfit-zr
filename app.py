@@ -9,7 +9,7 @@ main_key = "AYAxAPI"
 executor = ThreadPoolExecutor(max_workers=10)
 
 def fetch_player_info(uid, region):
-    url = f'https://xp-info-v5.vercel.app/player?uid={uid}&region={region}'
+    url = f'https://info-outfit-ayacte.vercel.app/player-info?uid={uid}&region={region}'
     response = requests.get(url)
     return response.json() if response.status_code == 200 else None
 
@@ -40,12 +40,14 @@ def outfit_image():
     if not player_data:
         return jsonify({'error': 'Failed to fetch player info'}), 500
 
-    profile = player_data.get("player_info", {}).get("profileInfo", {})
+    # التعديلات هنا فقط
+    profile = player_data.get("profileInfo", {})
     clothes_ids = profile.get("clothes", [])
     equipped_skills = profile.get("equipedSkills", [])
-    pet_info = player_data.get("player_info", {}).get("petInfo", {})
+    pet_info = player_data.get("petInfo", {})
     pet_id = pet_info.get("id")
-    weapon_id = player_data.get("player_info", {}).get("basicInfo", {}).get("gameBagShow")
+    weapon_id_list = player_data.get("basicInfo", {}).get("weaponSkinShows", [])
+    weapon_id = weapon_id_list[0] if weapon_id_list else None
 
     required_starts = ["211", "214", "211", "203", "204", "205", "203"]
     fallback_ids = ["211000000", "214000000", "208000000", "203000000", "204000000", "205000000", "212000000"]
@@ -83,7 +85,6 @@ def outfit_image():
         {'x': 42,  'y': 334, 'width': 170, 'height': 170}
     ]
 
-
     for idx, future in enumerate(outfit_images):
         outfit_image = future.result()
         if outfit_image:
@@ -91,7 +92,6 @@ def outfit_image():
             resized = outfit_image.resize((pos['width'], pos['height']))
             background_image.paste(resized, (pos['x'], pos['y']), resized)
 
-    # Avatar từ skill ID kết thúc bằng 06
     avatar_id = next((skill for skill in equipped_skills if str(skill).endswith("06")), 406)
 
     if avatar_id:
