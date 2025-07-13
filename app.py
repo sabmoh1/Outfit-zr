@@ -70,7 +70,7 @@ def outfit_image():
     for idx, code in enumerate(required_starts):
         outfit_images.append(executor.submit(fetch_outfit_image, idx, code))
 
-    bg_url = 'https://iili.io/F3cIKpp.jpg'
+    bg_url = 'https://iili.io/FMQmKLx.png'
     background_image = fetch_and_process_image(bg_url, size=(1024, 1024))
     if not background_image:
         return jsonify({'error': 'Failed to fetch background image'}), 500
