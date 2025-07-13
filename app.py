@@ -46,7 +46,6 @@ def outfit_image():
     pet_info = player_data.get("petInfo", {})
     pet_id = pet_info.get("id")
     weapon_ids = player_data.get("basicInfo", {}).get("weaponSkinShows", [])
-    weapon_id = weapon_ids[0] if weapon_ids else None
 
     required_starts = ["211", "214", "211", "203", "204", "205", "203"]
     fallback_ids = ["211000000", "214000000", "208000000", "203000000", "204000000", "205000000", "212000000"]
@@ -76,16 +75,16 @@ def outfit_image():
 
     positions = [
         {'x': 728, 'y': 170, 'width': 170, 'height': 170},
-        {'x': 142, 'y': 142, 'width': 170, 'height': 170},  # هذا سنبدله
+        {'x': 142, 'y': 142, 'width': 170, 'height': 170},
         {'x': 839, 'y': 362, 'width': 170, 'height': 170},
         {'x': 710, 'y': 763, 'width': 140, 'height': 140},
         {'x': 38,  'y': 575, 'width': 170, 'height': 170},
         {'x': 164, 'y': 752, 'width': 170, 'height': 170},
-        {'x': 42,  'y': 334, 'width': 170, 'height': 170}   # وهذا معه
+        {'x': 42,  'y': 334, 'width': 170, 'height': 170}
     ]
 
-    # التبديل بين المربع الثاني (1) والمربع الأخير (6)
-    positions[1], positions[6] = positions[6], positions[1]
+    # هنا التعديل الذي طلبته: تبادل المربع الثاني مع المربع الرابع
+    positions[1], positions[3] = positions[3], positions[1]
 
     for idx, future in enumerate(outfit_images):
         outfit_image = future.result()
@@ -94,7 +93,7 @@ def outfit_image():
             resized = outfit_image.resize((pos['width'], pos['height']))
             background_image.paste(resized, (pos['x'], pos['y']), resized)
 
-    # Avatar từ skill ID kết thúc bằng 06
+    # Avatar (الشخصية)
     avatar_id = next((skill for skill in equipped_skills if str(skill).endswith("06")), 406)
 
     if avatar_id:
@@ -105,7 +104,8 @@ def outfit_image():
             center_y = 145
             background_image.paste(avatar_image, (center_x, center_y), avatar_image)
 
-    if weapon_id:
+    if weapon_ids:
+        weapon_id = weapon_ids[0]
         weapon_url = f'https://freefireinfo.vercel.app/icon?id={weapon_id}'
         weapon_image = fetch_and_process_image(weapon_url, size=(360, 180))
         if weapon_image:
