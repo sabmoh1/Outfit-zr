@@ -83,9 +83,12 @@ def outfit_image():
         {'x': 42,  'y': 334, 'width': 170, 'height': 170}
     ]
 
-    # هنا التعديل الذي طلبته: تبادل المربع الثاني مع المربع الرابع
+    # أولاً: تبادل المربع الثاني (1) مع الرابع (3)
     positions[1], positions[3] = positions[3], positions[1]
 
+    # ثم: تبادل المربع الثاني (1 بعد التعديل) مع السابع (6)
+    positions[1], positions[6] = positions[6], positions[1]
+    
     for idx, future in enumerate(outfit_images):
         outfit_image = future.result()
         if outfit_image:
