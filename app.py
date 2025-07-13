@@ -82,12 +82,15 @@ def outfit_image():
         {'x': 164, 'y': 752, 'width': 170, 'height': 170},
         {'x': 42,  'y': 334, 'width': 170, 'height': 170}
     ]
-
     # أولاً: تبادل المربع الثاني (1) مع الرابع (3)
     positions[1], positions[3] = positions[3], positions[1]
 
     # ثم: تبادل المربع الثاني (1 بعد التعديل) مع السابع (6)
     positions[1], positions[6] = positions[6], positions[1]
+
+    # رفع وتحريك المربع النهائي
+    positions[1]['x'] += 20  # يمين
+    positions[1]['y'] -= 20  # أعلى
     
     for idx, future in enumerate(outfit_images):
         outfit_image = future.result()
