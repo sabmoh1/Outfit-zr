@@ -87,7 +87,9 @@ def outfit_image():
 
     # ثم: تبادل المربع الثاني (1 بعد التعديل) مع السابع (6)
     positions[1], positions[6] = positions[6], positions[1]
-
+    #
+    positions[3], positions[1] = positions[1], positions[3]
+    
     # رفع وتحريك المربع النهائي
     positions[6]['x'] += 20  # يمين
     positions[6]['y'] -= 40  # أعلى
