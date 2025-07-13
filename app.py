@@ -9,7 +9,7 @@ main_key = "AYAxAPI"
 executor = ThreadPoolExecutor(max_workers=10)
 
 def fetch_player_info(uid, region):
-    url = f'https://aditya-info-v12op.onrender.com/player-info?uid={uid}&region={region}'
+    url = f'https://xp-info-v5.vercel.app/player?uid={uid}&region={region}'
     response = requests.get(url)
     return response.json() if response.status_code == 200 else None
 
