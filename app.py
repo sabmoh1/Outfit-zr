@@ -86,44 +86,39 @@ def outfit_image():
         return jsonify({'error': 'Failed to fetch background image'}), 500
 
     positions = [
-        {'x': 728, 'y': 170, 'width': 170, 'height': 170},
-        {'x': 142, 'y': 142, 'width': 170, 'height': 170},
-        {'x': 839, 'y': 362, 'width': 170, 'height': 170},
-        {'x': 710, 'y': 763, 'width': 140, 'height': 140},
-        {'x': 38,  'y': 575, 'width': 170, 'height': 170},
-        {'x': 164, 'y': 752, 'width': 170, 'height': 170},
-        {'x': 42,  'y': 334, 'width': 170, 'height': 170}
-    ]
-    # أولاً: تبادل المربع الثاني (1) مع الرابع (3)
-    positions[1], positions[3] = positions[3], positions[1]
+    {'x': 728, 'y': 170, 'width': 170, 'height': 170},  # 0
+    {'x': 142, 'y': 142, 'width': 170, 'height': 170},  # 1
+    {'x': 839, 'y': 362, 'width': 170, 'height': 170},  # 2
+    {'x': 710, 'y': 763, 'width': 140, 'height': 140},  # 3
+    {'x': 38,  'y': 575, 'width': 170, 'height': 170},  # 4
+    {'x': 164, 'y': 752, 'width': 170, 'height': 170},  # 5
+    {'x': 42,  'y': 334, 'width': 170, 'height': 170}   # 6
+]
 
-    # ثم: تبادل المربع الثاني (1 بعد التعديل) مع السابع (6)
-    positions[1], positions[6] = positions[6], positions[1]
+# تبادلات البوزيشن حسب ما طلبت
+positions[1], positions[3] = positions[3], positions[1]
+positions[1], positions[6] = positions[6], positions[1]
+positions[3], positions[1] = positions[1], positions[3]
 
-    # تبادل آخر
-    positions[3], positions[1] = positions[1], positions[3]
+# تحريك المربع النهائي (آخر واحد)
+positions[6]['x'] += 20
+positions[6]['y'] -= 40
 
-    # رفع وتحريك المربع النهائي
-    positions[6]['x'] += 20
-    positions[6]['y'] -= 40
+# تحريك العناصر التي على اليسار إلى اليمين (مثلاً x أقل من 400)
+for pos in positions:
+    if pos['x'] < 400:
+        pos['x'] += 60  # تحريك إلى اليمين
 
-    for idx, future in enumerate(outfit_images):
-        outfit_image = future.result()
-        if outfit_image:
-            pos = positions[idx]
-            resized = outfit_image.resize((pos['width'], pos['height']))
-            background_image.paste(resized, (pos['x'], pos['y']), resized)
+# رسم الصور على الخلفية
+for idx, future in enumerate(outfit_images):
+    outfit_image = future.result()
+    if outfit_image:
+        pos = positions[idx]
+        resized = outfit_image.resize((pos['width'], pos['height']))
+        background_image.paste(resized, (pos['x'], pos['y']), resized)
 
-    # Avatar
-    avatar_id = next((skill for skill in equipped_skills if str(skill).endswith("06")), 406)
-
-    if avatar_id:
-        avatar_url = f'https://characteriroxmar.vercel.app/chars?id={avatar_id}'
-        avatar_image = fetch_and_process_image(avatar_url, size=(650, 780))
-        if avatar_image:
-            center_x = (1024 - avatar_image.width) // 2
-            center_y = 182
-            background_image.paste(avatar_image, (center_x, center_y), avatar_image)
+# شخصية الأفاتار في الوسط
+avatar_id = next((skill for skill in equipped_skills if str(skill).endswith("06")), 406)
 
     if weapon_ids:
         weapon_id = weapon_ids[0]
