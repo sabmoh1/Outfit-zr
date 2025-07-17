@@ -123,6 +123,10 @@ def outfit_image():
     positions[5]['x'] += 30
     positions[5]['y'] -= 60
 
+    # رفع وتحريك المربع النهائي
+    positions[2]['x'] -= 25
+    positions[2]['y'] += 25
+
     for idx, future in enumerate(outfit_images):
         outfit_image = future.result()
         if outfit_image:
