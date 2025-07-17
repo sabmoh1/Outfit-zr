@@ -109,7 +109,7 @@ def outfit_image():
 
     # رفع وتحريك المربع النهائي
     positions[3]['x'] += 10
-    positions[3]['y'] -= 80
+    positions[3]['y'] -= 20
 
     for idx, future in enumerate(outfit_images):
         outfit_image = future.result()
