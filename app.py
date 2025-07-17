@@ -146,11 +146,11 @@ def outfit_image():
             background_image.paste(avatar_image, (center_x, center_y), avatar_image)
 
     if weapon_ids:
-        weapon_id = weapon_ids[0]
-        weapon_url = f'https://freefireinfo.vercel.app/icon?id={weapon_id}'
-        weapon_image = fetch_and_process_image(weapon_url, size=(360, 180))
-        if weapon_image:
-            background_image.paste(weapon_image, (670, 564), weapon_image)
+    weapon_id = weapon_ids[0]
+    weapon_url = f'https://freefireinfo.vercel.app/icon?id={weapon_id}'
+    weapon_image = fetch_and_process_image(weapon_url, size=(360, 130))  # تقليل الارتفاع من 180 إلى 130
+    if weapon_image:
+        background_image.paste(weapon_image, (670, 500), weapon_image)  # رفع الصورة للأعلى من 564 إلى 500
 
     img_io = BytesIO()
     background_image.save(img_io, 'PNG')
