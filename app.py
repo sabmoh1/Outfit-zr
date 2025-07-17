@@ -150,7 +150,7 @@ def outfit_image():
         weapon_url = f'https://freefireinfo.vercel.app/icon?id={weapon_id}'
         weapon_image = fetch_and_process_image(weapon_url, size=(360, 130))
         if weapon_image:
-            background_image.paste(weapon_image, (670, 500), weapon_image)
+            background_image.paste(weapon_image, (670, 526), weapon_image)
     
 
     img_io = BytesIO()
