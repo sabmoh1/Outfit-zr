@@ -122,7 +122,7 @@ def outfit_image():
         avatar_image = fetch_and_process_image(avatar_url, size=(650, 780))
         if avatar_image:
             center_x = (1024 - avatar_image.width) // 2
-            center_y = 160
+            center_y = 154
             background_image.paste(avatar_image, (center_x, center_y), avatar_image)
 
     if weapon_ids:
