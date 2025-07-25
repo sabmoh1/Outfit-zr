@@ -14,7 +14,7 @@ temp_key_expiration = datetime(2025, 8, 13)  # انتهاء الصلاحية (غ
 executor = ThreadPoolExecutor(max_workers=10)
 
 def fetch_player_info(uid, region):
-    url = f'https://info-outfit-ayacte.vercel.app/player-info?uid={uid}&region={region}'
+    url = f'https://razor-info.vercel.app/player-info?uid={uid}&region={region}'
     response = requests.get(url)
     return response.json() if response.status_code == 200 else None
 
