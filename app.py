@@ -7,14 +7,14 @@ from datetime import datetime
 
 app = Flask(__name__)
 
-main_key = "ZRteam"
+main_key = "zr"
 temp_key = "RAZOR1MON"
 temp_key_expiration = datetime(2025, 8, 13)  # انتهاء الصلاحية (غير التاريخ إذا أردت)
 
 executor = ThreadPoolExecutor(max_workers=10)
 
 def fetch_player_info(uid, region):
-    url = f'https://razor-info.vercel.app/player-info?uid={uid}&region={region}'
+    url = f'https://grandmixture-id-info.vercel.app/player-info?region={region}&uid={uid}'
     response = requests.get(url)
     return response.json() if response.status_code == 200 else None
 
@@ -52,12 +52,13 @@ def outfit_image():
     if not player_data:
         return jsonify({'error': 'Failed to fetch player info'}), 500
 
-    profile = player_data.get("profileInfo", {})
-    clothes_ids = profile.get("clothes", [])
-    equipped_skills = profile.get("equipedSkills", [])
+    profile = player_data.get("AccountProfileInfo", {})
+    clothes_ids = profile.get("EquippedOutfit", [])
+    equipped_skills = profile.get("EquippedSkills", [])
     pet_info = player_data.get("petInfo", {})
     pet_id = pet_info.get("id")
-    weapon_ids = player_data.get("basicInfo", {}).get("weaponSkinShows", [])
+    avatar_id = player_data.get("AccountInfo", {}).get("AccountAvatarId")
+    weapon_ids = player_data.get("AccountInfo", {}).get("EquippedWeapon", [])
 
     required_starts = ["211", "214", "211", "203", "204", "205", "203"]
     fallback_ids = ["211000000", "214000000", "208000000", "203000000", "204000000", "205000000", "212000000"]
@@ -141,8 +142,8 @@ def outfit_image():
         avatar_url = f'https://characteriroxmar.vercel.app/chars?id={avatar_id}'
         avatar_image = fetch_and_process_image(avatar_url, size=(650, 780))
         if avatar_image:
-            center_x = (1024 - avatar_image.width) // 2
-            center_y = 154
+            center_x = (1030 - avatar_image.width) // 2
+            center_y = 125
             background_image.paste(avatar_image, (center_x, center_y), avatar_image)
 
     if weapon_ids:
