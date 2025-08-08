@@ -9,7 +9,7 @@ app = Flask(__name__)
 
 main_key = "zr"
 temp_key = "RAZOR1MON"
-temp_key_expiration = datetime(2025, 9, 13)  # انتهاء الصلاحية (غير التاريخ إذا أردت)
+temp_key_expiration = datetime(2025, 8, 13)  # انتهاء الصلاحية (غير التاريخ إذا أردت)
 
 executor = ThreadPoolExecutor(max_workers=10)
 
