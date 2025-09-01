@@ -9,15 +9,17 @@ app = Flask(__name__)
 
 main_key = "zr"
 temp_key = "RAZOR1MON"
-temp_key_expiration = datetime(2025, 8, 23)  # انتهاء الصلاحية (غير التاريخ إذا أردت)
+temp_key_expiration = datetime(2025, 8, 23)  # انتهاء الصلاحية
 
 executor = ThreadPoolExecutor(max_workers=10)
 
+# جلب بيانات اللاعب من API الجديد
 def fetch_player_info(uid, region):
-    url = f'https://grandmixture-id-info.vercel.app/player-info?region={region}&uid={uid}'
+    url = f'https://switch-info2.vercel.app/player-info?region={region}&uid={uid}'
     response = requests.get(url)
     return response.json() if response.status_code == 200 else None
 
+# جلب صورة ومعالجتها
 def fetch_and_process_image(image_url, size=None):
     try:
         response = requests.get(image_url)
@@ -41,7 +43,7 @@ def outfit_image():
 
     # التحقق من المفتاح
     if key == main_key:
-        pass  # مفتاح دائم
+        pass
     elif key == temp_key:
         if datetime.utcnow() > temp_key_expiration:
             return jsonify({'error': 'Temporary key expired'}), 403
@@ -52,16 +54,18 @@ def outfit_image():
     if not player_data:
         return jsonify({'error': 'Failed to fetch player info'}), 500
 
-    profile = player_data.get("AccountProfileInfo", {})
-    clothes_ids = profile.get("EquippedOutfit", [])
-    equipped_skills = profile.get("EquippedSkills", [])
+    # البنية الجديدة للـ API
+    profile = player_data.get("profileInfo", {})
+    clothes_ids = profile.get("clothes", [])
+    equipped_skills = profile.get("equipedSkills", [])
     pet_info = player_data.get("petInfo", {})
     pet_id = pet_info.get("id")
-    avatar_id = player_data.get("AccountInfo", {}).get("AccountAvatarId")
-    weapon_ids = player_data.get("AccountInfo", {}).get("EquippedWeapon", [])
+    avatar_id = profile.get("avatarId")
+    weapon_ids = player_data.get("basicInfo", {}).get("weaponSkinShows", [])
 
     required_starts = ["211", "214", "211", "203", "204", "205", "203"]
-    fallback_ids = ["211000000", "214000000", "208000000", "203000000", "204000000", "205000000", "212000000"]
+    fallback_ids = ["211000000", "214000000", "208000000", "203000000",
+                    "204000000", "205000000", "212000000"]
     used_ids = set()
     outfit_images = []
 
@@ -75,13 +79,14 @@ def outfit_image():
                 break
         if matched is None:
             matched = fallback_ids[idx]
-        url = f'https://freefireinfo.vercel.app/icon?id={matched}'
+        url = f'https://ch9ayfa-100.vercel.app/freefire/icons/{matched}.png'
         return fetch_and_process_image(url, size=(170, 170))
 
     for idx, code in enumerate(required_starts):
         outfit_images.append(executor.submit(fetch_outfit_image, idx, code))
 
-    bg_url = 'https://iili.io/FXyDJ5l.png'
+    # الخلفية
+    bg_url = 'https://iili.io/Kfw5nUu.jpg'
     background_image = fetch_and_process_image(bg_url, size=(1024, 1024))
     if not background_image:
         return jsonify({'error': 'Failed to fetch background image'}), 500
@@ -95,36 +100,22 @@ def outfit_image():
         {'x': 164, 'y': 752, 'width': 170, 'height': 170},
         {'x': 42,  'y': 334, 'width': 170, 'height': 170}
     ]
-    # أولاً: تبادل المربع الثاني (1) مع الرابع (3)
+
+    # نفس التعديلات القديمة على المربعات
     positions[1], positions[3] = positions[3], positions[1]
-
-    # ثم: تبادل المربع الثاني (1 بعد التعديل) مع السابع (6)
     positions[1], positions[6] = positions[6], positions[1]
-
-    # تبادل آخر
     positions[3], positions[1] = positions[1], positions[3]
 
-    # رفع وتحريك المربع النهائي
     positions[6]['x'] += 10
     positions[6]['y'] -= 80
-
-    # رفع وتحريك المربع النهائي
     positions[3]['x'] -= 14
     positions[3]['y'] += 46
-
-    # رفع وتحريك المربع النهائي
     positions[1]['x'] -= 25
     positions[1]['y'] += 66
-
-    # رفع وتحريك المربع النهائي
     positions[4]['x'] += 64
     positions[4]['y'] -= 33
-
-    # رفع وتحريك المربع النهائي
     positions[5]['x'] += 30
     positions[5]['y'] -= 60
-
-    # رفع وتحريك المربع النهائي
     positions[0]['x'] += 25
     positions[0]['y'] += 25
 
@@ -136,28 +127,27 @@ def outfit_image():
             background_image.paste(resized, (pos['x'], pos['y']), resized)
 
     # Avatar
-    avatar_id = next((skill for skill in equipped_skills if str(skill).endswith("06")), 406)
-
     if avatar_id:
-        avatar_url = f'https://characteriroxmar.vercel.app/chars?id={avatar_id}'
-        avatar_image = fetch_and_process_image(avatar_url, size=(650, 780))
+        avatar_url = f'https://ch9ayfa-100.vercel.app/freefire/icons/{avatar_id}.png'
+        avatar_image = fetch_and_process_image(avatar_url, size=(146, 146))
         if avatar_image:
-            center_x = (1030 - avatar_image.width) // 2
-            center_y = 125
+            center_x = (1066 - avatar_image.width) // 2
+            center_y = 710
             background_image.paste(avatar_image, (center_x, center_y), avatar_image)
 
+    # Weapon
     if weapon_ids:
         weapon_id = weapon_ids[0]
-        weapon_url = f'https://freefireinfo.vercel.app/icon?id={weapon_id}'
+        weapon_url = f'https://ch9ayfa-100.vercel.app/freefire/icons/{weapon_id}.png'
         weapon_image = fetch_and_process_image(weapon_url, size=(360, 130))
         if weapon_image:
             background_image.paste(weapon_image, (670, 526), weapon_image)
-    
 
     img_io = BytesIO()
     background_image.save(img_io, 'PNG')
     img_io.seek(0)
     return send_file(img_io, mimetype='image/png')
+
 
 if __name__ == "__main__":
     app.run(debug=True, host='0.0.0.0', port=5000)
